@@ -51,7 +51,7 @@ public class RecommendRequest extends BasicProcessorRequest{
 
             if (productList != null && productList.size() >= 0) {
                 for (Product product : productList) {
-                    UserManager.insertRecommendItem(mongoClient, user, product, itemId);
+                    UserManager.setRecommendItem(mongoClient, user, product, itemId);
                     UserManager.recommendClose(mongoClient, user);
                 }
             } else {
@@ -62,7 +62,7 @@ public class RecommendRequest extends BasicProcessorRequest{
     }
 
     private String generateKeyword(String city, String cate, String subcate) {
-        
+
         String keyword = "";
         if (!StringUtil.isEmpty(city)) {
             keyword = city;
