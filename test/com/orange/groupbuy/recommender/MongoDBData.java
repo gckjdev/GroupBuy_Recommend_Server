@@ -52,8 +52,8 @@ public class MongoDBData {
 	public void addUserShoppingItem() {
 	    for (int i = 0; i < 1; i++) {
 	        User user = UserManager.findUserByUserId(mongoClient,  Integer.toString(i));
-	        user.addShoppingItem( "item"+0,  "美食",  "湘菜", "鱼头",  "广州",  10f,  10f);
-	        user.addShoppingItem( "item"+1,  "美食",  "西餐", "寿司",  "广州",  10f,  10f);
+	        user.addShoppingItem( "item"+0, "西餐", "自助餐", "自助餐", "北京",  10f,  10f);
+	        user.addShoppingItem( "item"+1, "西餐", "法国菜", "西餐 法国菜", "广州",  10f,  10f);
 	        UserManager.save(mongoClient, user);
 	    }
 	}
