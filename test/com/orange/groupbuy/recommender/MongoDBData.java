@@ -3,6 +3,7 @@ package com.orange.groupbuy.recommender;
 
 import java.util.Random;
 
+import org.bson.types.ObjectId;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -10,7 +11,6 @@ import org.junit.Test;
 
 import com.mongodb.BasicDBObject;
 import com.orange.common.mongodb.MongoDBClient;
-import com.orange.common.utils.StringUtil;
 import com.orange.groupbuy.constant.DBConstants;
 import com.orange.groupbuy.dao.User;
 import com.orange.groupbuy.manager.UserManager;
@@ -20,6 +20,7 @@ public class MongoDBData {
     MongoDBClient mongoClient;
 	static String userId;
 	static String deviceId;
+	static ObjectId id;
 	private Random seed;
 
 	@BeforeClass
@@ -39,42 +40,31 @@ public class MongoDBData {
 
 	
 	@Test
-	public void insertUserForRecommend() {
+	public void addUserForRecommend() {
 	    for (int i = 0; i < 1; i++) {
 	        BasicDBObject obj = new BasicDBObject();
-//	        obj.put(DBConstants.F_RECOMMEND_STATUS, DBConstants.C_RECOMMEND_STATUS_NOT_RUNNING);
-	        obj.put(DBConstants.F_USERID, Integer.toString(i));
+	        id = new ObjectId();
+	        obj.put(DBConstants.F_USERID, id);
 	        mongoClient.insert(DBConstants.T_USER, obj);
+	        
+	        User user = UserManager.findUserByUserId(mongoClient, id.toString());
+            user.addShoppingItem( "item"+0, "西餐", "自助餐", "自助餐", "北京",  10f,  10f);
+            user.addShoppingItem( "item"+1, "西餐", "法国菜", "西餐 法国菜", "广州",  10f,  10f);
+            UserManager.save(mongoClient, user);
+	        
 	    }
 	}
 	
 	@Test
 	public void addUserShoppingItem() {
 	    for (int i = 0; i < 1; i++) {
-	        User user = UserManager.findUserByUserId(mongoClient,  Integer.toString(i));
+	        User user = UserManager.findUserByUserId(mongoClient, id.toString());
 	        user.addShoppingItem( "item"+0, "西餐", "自助餐", "自助餐", "北京",  10f,  10f);
 	        user.addShoppingItem( "item"+1, "西餐", "法国菜", "西餐 法国菜", "广州",  10f,  10f);
 	        UserManager.save(mongoClient, user);
 	    }
 	}
 	
-	@Test
-	public void testRecommend() {
-	    BasicDBObject item = new BasicDBObject();       
-        item.put(DBConstants.F_PRODUCTID, 1); 
-        item.put(DBConstants.F_SCORE,1); 
-                                                
-        BasicDBObject query = new BasicDBObject();
-        query.put(DBConstants.F_FOREIGN_USER_ID,  "0");
-
-        BasicDBObject pushValue = new BasicDBObject();      
-        pushValue.put(DBConstants.F_RECOMMENDLIST, item);
-
-        BasicDBObject update = new BasicDBObject();             
-        update.put("$push", pushValue);
-        
-        mongoClient.upsertAll(DBConstants.T_RECOMMEND, query, update);
-	}
 	
 	@Test
     public void resetRecommendStatus() {
@@ -92,11 +82,5 @@ public class MongoDBData {
         
         mongoClient.updateAll(DBConstants.T_USER, query, update);
     }
-	
-	@Test
-	public void testfindAndModifyUpsert() {
-	    mongoClient.findAndModifyUpsert(DBConstants.T_USER,"r_status",0,1);
-	    
-	}
 	
 }
