@@ -6,7 +6,7 @@ public class RecommendServer {
 
     public static void main(final String[] args) throws InstantiationException, IllegalAccessException {
 
-        ScheduleServer scheduleServer = new ScheduleServer(RecommendProcessor.class);
+        ScheduleServer scheduleServer = new ScheduleServer(new RecommendProcessor());
         Thread server = new Thread(scheduleServer);
         server.start();
 

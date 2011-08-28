@@ -35,6 +35,10 @@ public class RecommendRequest extends BasicProcessorRequest {
     public void execute(CommonProcessor mainProcessor) {
         MongoDBClient mongoClient = mainProcessor.getMongoDBClient();
 
+        if (user.getShoppingItem() == null || user.getShoppingItem().size() <= 0) {
+            return;
+        }
+
         for (int i = 0; i < user.getShoppingItem().size(); i++) {
 
             BasicDBObject item = (BasicDBObject) (user.getShoppingItem().get(i));
