@@ -19,7 +19,7 @@ import com.orange.groupbuy.manager.UserManager;
 /**
  * The Class RecommendRequest.
  */
-public class RecommendRequest extends BasicProcessorRequest{
+public class RecommendRequest extends BasicProcessorRequest {
 
     public static final Logger log = Logger.getLogger(RecommendRequest.class.getName());
 
