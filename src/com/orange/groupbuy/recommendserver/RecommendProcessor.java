@@ -3,15 +3,18 @@ import com.orange.common.mongodb.MongoDBClient;
 import com.orange.common.processor.BasicProcessorRequest;
 import com.orange.common.processor.ScheduleServerProcessor;
 import com.orange.common.utils.DateUtil;
-import com.orange.groupbuy.constant.DBConstants;
 import com.orange.groupbuy.dao.User;
 import com.orange.groupbuy.manager.UserManager;
 
 
 public class RecommendProcessor extends ScheduleServerProcessor {
 
-    // TODO move to recommend server
-    private static MongoDBClient mongoClient = new MongoDBClient(DBConstants.D_GROUPBUY);
+    private MongoDBClient mongoClient;
+
+    public RecommendProcessor(MongoDBClient mongoDBClient) {
+        super();
+        this.mongoClient = mongoDBClient;
+    }
 
     @Override
     public final MongoDBClient getMongoDBClient () {

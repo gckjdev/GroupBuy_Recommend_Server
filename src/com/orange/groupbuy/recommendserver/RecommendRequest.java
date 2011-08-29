@@ -1,10 +1,7 @@
 package com.orange.groupbuy.recommendserver;
 
 import java.util.List;
-
 import org.apache.log4j.Logger;
-
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.orange.common.mongodb.MongoDBClient;
 import com.orange.common.processor.BasicProcessorRequest;
