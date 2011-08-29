@@ -34,80 +34,102 @@ public class RecommendRequest extends BasicProcessorRequest {
         this.user = user;
     }
 
+    @Override
+    public String toString() {
+        return "RecommendRequest [user=" + user.getUserId() + "]";
+    }
 
     @Override
     public void execute(CommonProcessor mainProcessor) {
         MongoDBClient mongoClient = mainProcessor.getMongoDBClient();
 
         if (user.getShoppingItem() == null || user.getShoppingItem().size() <= 0) {
+            log.info("find user(" + user.getUserId() + ") but user has no shopping item");
             return;
         }
+        
+        String userId = user.getUserId();
 
         for (int i = 0; i < user.getShoppingItem().size(); i++) {
 
-            BasicDBObject item = (BasicDBObject) (user.getShoppingItem().get(i));
-
-            String city = (String) item.get(DBConstants.F_CITY);
-            String cate = (String) item.get(DBConstants.F_CATEGORY_NAME);
-            String subcate = (String) item.get(DBConstants.F_SUB_CATEGORY_NAME);
-            String itemId = (String) item.get(DBConstants.F_ITEM_ID);
-
-            String keyword = generateKeyword(city, cate, subcate);
-
-            RecommendItem recommendItem = RecommendItemManager.findRecommendItem(mongoClient, user.getUserId(), itemId);
-
-            List<Product> productList = ProductManager.searchProductBySolr(SolrClient.getInstance(), mongoClient, city,
-                    null, false, keyword, 0, RecommendConstants.MAX_RECOMMEND_COUNT);
-
-            if (productList == null || productList.size() <= 0) {
-                log.info("no product match to be recommended.");
-                UserManager.recommendFailure(mongoClient, user);
-                return;
-            }
-
-            boolean hasChange = false;
-
-            for (Product product : productList) {
-                if (RecommendItemManager.addOrUpdateProduct(recommendItem, product)) {
-                    hasChange = true;
+            try{
+                BasicDBObject item = (BasicDBObject) (user.getShoppingItem().get(i));
+    
+                String city = (String) item.get(DBConstants.F_CITY);
+                String cate = (String) item.get(DBConstants.F_CATEGORY_NAME);
+                String subcate = (String) item.get(DBConstants.F_SUB_CATEGORY_NAME);
+                String itemId = (String) item.get(DBConstants.F_ITEM_ID);
+    
+                String keyword = generateKeyword(city, cate, subcate);
+    
+                RecommendItem recommendItem = RecommendItemManager.findRecommendItem(mongoClient, user.getUserId(), itemId);
+    
+                List<Product> productList = ProductManager.searchProductBySolr(SolrClient.getInstance(), mongoClient, city,
+                        null, false, keyword, 0, RecommendConstants.MAX_RECOMMEND_COUNT);
+    
+                if (productList == null || productList.size() <= 0) {
+                    log.info("no product match to be recommended for user=" + userId + ", itemId = " + itemId);
+                    UserManager.recommendFailure(mongoClient, user);
+                    return;
                 }
+
+
+                // add product into recommend item list
+                boolean hasChange = false;
+                int addCount = 0;
+                for (Product product : productList) {
+                    // log.debug("process product " + product.getId() + ", title = " + product.getTitle());
+                    if (RecommendItemManager.addOrUpdateProduct(recommendItem, product)) {
+                        log.info("add or update product (" + product.getId() +
+                                "), score = " + product.getScore() +
+                                " into recommend item = " + itemId);
+
+                        hasChange = true;
+                        addCount++;
+                    }
+                }
+
+                log.info(productList.size() + " product found, " + addCount +
+                        " are added/updated for user=" + userId + ", itemId = " + itemId);
+
+                if (hasChange) {
+                    // sort product in recommend item
+                    String productId = recommendItem.sortAndSelectProduct();
+
+                    Product product = ProductManager.findProductById(mongoClient, productId);
+
+                    if (product != null) {
+                        // select one product for pushMessage, and set the status to sending
+                        saveProductToPushMessage(mongoClient, product,  user);
+                    }
+
+                    // save object into DB
+                    mongoClient.save(DBConstants.T_RECOMMEND, recommendItem.getDbObject());
+                }
+
                 UserManager.recommendClose(mongoClient, user);
             }
+            catch (Exception e) {
+                log.error("Processing user(" + user.getUserId() +
+                        ") shopping item, but catch exception = " +
+                        e.toString() + e.getMessage());
 
-            if (hasChange) {
-
-                // sort product in recommend item
-                Product product = sortProductByScore(productList);
-
-                // select one product for pushMessage
-                saveProductToPushMessage(mongoClient, product);
-
-                // save object into DB
-                mongoClient.save(DBConstants.T_RECOMMEND, recommendItem.getDbObject());
-
+                UserManager.recommendFailure(mongoClient, user);
             }
 
         }
     }
 
-    private void saveProductToPushMessage(MongoDBClient mongoClient, Product product) {
+    private void saveProductToPushMessage(MongoDBClient mongoClient, Product product, User user) {
+        if (product == null) {
+            return;
+        }
+
+        log.info("select product = " + product.getId() + ", score = " + product.getScore() +
+                " for push to user = " + user.getUserId());
+
         PushMessageManager.savePushMessage(mongoClient, product, user);
     }
-
-    private Product sortProductByScore(List<Product> productList) {
-        //BubbleSort
-        for (int i = 1; i < productList.size(); i++) {
-            for (int j = 0; j < productList.size() - i; j++) {
-                if (productList.get(j).getScore() > productList.get(j + 1).getScore()) {
-                    Product tmp = productList.get(j);
-                    productList.set(j, productList.get(j + 1));
-                    productList.set(j + 1, tmp);
-                }
-            }
-        }
-        return productList.get(productList.size() - 1);
-    }
-
 
     private String generateKeyword(String city, String cate, String subcate) {
 

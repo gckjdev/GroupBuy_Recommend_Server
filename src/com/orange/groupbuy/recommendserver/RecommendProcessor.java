@@ -10,11 +10,8 @@ import com.orange.groupbuy.manager.UserManager;
 
 public class RecommendProcessor extends ScheduleServerProcessor {
 
-    static final String MONGO_SERVER = "localhost";
-    static final String MONGO_USER = "";
-    static final String MONGO_PASSWORD = "";
-
-    private static MongoDBClient mongoClient = new MongoDBClient(MONGO_SERVER, DBConstants.D_GROUPBUY, MONGO_USER, MONGO_PASSWORD);
+    // TODO move to recommend server
+    private static MongoDBClient mongoClient = new MongoDBClient(DBConstants.D_GROUPBUY);
 
     @Override
     public final MongoDBClient getMongoDBClient () {
@@ -32,7 +29,7 @@ public class RecommendProcessor extends ScheduleServerProcessor {
         User user = UserManager.findUserForRecommend(mongoClient);
 
         if (user == null) {
-            log.info("no user to be recommended.");
+            log.info("No user to be recommended.");
             return null;
         }
         RecommendRequest request = new RecommendRequest(user);
@@ -46,7 +43,10 @@ public class RecommendProcessor extends ScheduleServerProcessor {
                                   RecommendConstants.END_DATE_HOUR, RecommendConstants.END_DATE_MINUTE)) {
             return true;
         }
-        return false;
+        else {
+            log.debug("Current date is not valid for running recommendation");
+            return false;
+        }
     }
 
 }

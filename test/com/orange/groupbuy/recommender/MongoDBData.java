@@ -20,7 +20,7 @@ public class MongoDBData {
     MongoDBClient mongoClient;
 	static String userId;
 	static String deviceId;
-	static ObjectId id;
+//	static ObjectId id;
 	private Random seed;
 
 	@BeforeClass
@@ -43,27 +43,28 @@ public class MongoDBData {
 	public void addUserForRecommend() {
 	    for (int i = 0; i < 1; i++) {
 	        BasicDBObject obj = new BasicDBObject();
-	        id = new ObjectId();
+	        ObjectId id = new ObjectId("4e5355560364950fcb95449a");
 	        obj.put(DBConstants.F_USERID, id);
 	        mongoClient.insert(DBConstants.T_USER, obj);
 	        
 	        User user = UserManager.findUserByUserId(mongoClient, id.toString());
-            user.addShoppingItem( "item"+0, "西餐", "自助餐", "自助餐", "北京",  10f,  10f);
+            user.addShoppingItem( "item"+0, "美食", "湘菜", "湘菜", "北京",  10f,  10f);
             user.addShoppingItem( "item"+1, "西餐", "法国菜", "西餐 法国菜", "广州",  10f,  10f);
+            user.setDeviceToke("a5bdd473afd091e9537aeef306a3a2992be9c11f4a198532c991be55d59eafe2");
             UserManager.save(mongoClient, user);
 	        
 	    }
 	}
 	
-	@Test
-	public void addUserShoppingItem() {
-	    for (int i = 0; i < 1; i++) {
-	        User user = UserManager.findUserByUserId(mongoClient, id.toString());
-	        user.addShoppingItem( "item"+0, "西餐", "自助餐", "自助餐", "北京",  10f,  10f);
-	        user.addShoppingItem( "item"+1, "西餐", "法国菜", "西餐 法国菜", "广州",  10f,  10f);
-	        UserManager.save(mongoClient, user);
-	    }
-	}
+//	@Test
+//	public void addUserShoppingItem() {
+//	    for (int i = 0; i < 1; i++) {
+//	        User user = UserManager.findUserByUserId(mongoClient, id.toString());
+//	        user.addShoppingItem( "item"+0, "西餐", "自助餐", "自助餐", "北京",  10f,  10f);
+//	        user.addShoppingItem( "item"+1, "西餐", "法国菜", "西餐 法国菜", "广州",  10f,  10f);
+//	        UserManager.save(mongoClient, user);
+//	    }
+//	}
 	
 	
 	@Test
