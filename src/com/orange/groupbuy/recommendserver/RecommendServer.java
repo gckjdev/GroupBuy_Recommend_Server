@@ -23,7 +23,7 @@ public class RecommendServer {
 
 
         ScheduleServer scheduleServer = new ScheduleServer(new RecommendProcessor(mongoClient));
-        scheduleServer.setMax_thread_num(MAX_THREAD_NUM);
+        scheduleServer.setThreadNum(MAX_THREAD_NUM);
         Thread server = new Thread(scheduleServer);
         server.start();
 
