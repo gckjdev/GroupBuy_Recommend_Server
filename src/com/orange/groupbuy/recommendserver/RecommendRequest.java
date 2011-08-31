@@ -59,13 +59,14 @@ public class RecommendRequest extends BasicProcessorRequest {
                 String cate = (String) item.get(DBConstants.F_CATEGORY_NAME);
                 String subcate = (String) item.get(DBConstants.F_SUB_CATEGORY_NAME);
                 String itemId = (String) item.get(DBConstants.F_ITEM_ID);
+                String keyword = (String) item.get(DBConstants.F_KEYWORD);
     
-                String keyword = generateKeyword(city, cate, subcate);
+                String keywords = generateKeyword(city, cate, subcate, keyword);
     
                 RecommendItem recommendItem = RecommendItemManager.findRecommendItem(mongoClient, user.getUserId(), itemId);
     
                 List<Product> productList = ProductManager.searchProductBySolr(SolrClient.getInstance(), mongoClient, city,
-                        null, false, keyword, 0, RecommendConstants.MAX_RECOMMEND_COUNT);
+                        null, false, keywords, 0, RecommendConstants.MAX_RECOMMEND_COUNT);
     
                 if (productList == null || productList.size() <= 0) {
                     log.info("no product match to be recommended for user=" + userId + ", itemId = " + itemId);
@@ -131,20 +132,25 @@ public class RecommendRequest extends BasicProcessorRequest {
         PushMessageManager.savePushMessage(mongoClient, product, user);
     }
 
-    private String generateKeyword(String city, String cate, String subcate) {
+    private String generateKeyword(String city, String cate, String subcate, String keyword) {
 
-        String keyword = "";
+        // TODO change conditions
+        
+        String keywords = "";
         if (!StringUtil.isEmpty(city)) {
-            keyword = city;
+            keywords = city;
         }
         if (!StringUtil.isEmpty(cate)) {
-            keyword = keyword.concat(" ").concat(cate);
+            keywords = keyword.concat(" ").concat(cate);
         }
         if (!StringUtil.isEmpty(subcate)) {
-            keyword = keyword.concat(" ").concat(subcate);
+            keywords = keyword.concat(" ").concat(subcate);
+        }
+        if (!StringUtil.isEmpty(keyword)) {
+            keywords = keyword.concat(" ").concat(keyword);
         }
 
-        return keyword.trim();
+        return keywords.trim();
     }
 
 }
