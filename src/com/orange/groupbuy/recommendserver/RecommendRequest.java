@@ -92,7 +92,12 @@ public class RecommendRequest extends BasicProcessorRequest {
 
                 if (hasChange) {
                     // sort product in recommend item
-                    String productId = recommendItem.sortAndSelectProduct();
+                    String productId = recommendItem.sortAndSelectProduct(user);
+
+                    if (productId == null) {
+                        log.info("no product to recommend");
+                        return;
+                    }
 
                     Product product = ProductManager.findProductById(mongoClient, productId);
 
@@ -102,6 +107,7 @@ public class RecommendRequest extends BasicProcessorRequest {
                     }
 
                     // save object into DB
+                    mongoClient.save(DBConstants.T_USER, user.getDbObject());
                     mongoClient.save(DBConstants.T_RECOMMEND, recommendItem.getDbObject());
                 }
 
@@ -123,9 +129,10 @@ public class RecommendRequest extends BasicProcessorRequest {
             return;
         }
 
+//        UserManager.addPushCount(user);
+
         log.info("select product = " + product.getId() + ", score = " + product.getScore() +
                 " for push to user = " + user.getUserId());
-
         PushMessageManager.savePushMessage(mongoClient, product, user);
     }
 
