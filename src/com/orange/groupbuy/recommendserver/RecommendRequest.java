@@ -72,7 +72,7 @@ public class RecommendRequest extends BasicProcessorRequest {
 
                 String keywords = generateKeyword(city, cate, subcate, keyword);
 
-                RecommendItem recommendItem = RecommendItemManager.findRecommendItem(mongoClient, user.getUserId(), itemId);
+                RecommendItem recommendItem = RecommendItemManager.findAndUpsertRecommendItem(mongoClient, user.getUserId(), itemId);
 
                 List<Product> productList = ProductManager.searchProductBySolr(SolrClient.getInstance(), mongoClient, city,
                         null, false, keywords, maxPrice, 0, RecommendConstants.MAX_RECOMMEND_COUNT);
