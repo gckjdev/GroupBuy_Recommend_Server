@@ -1,7 +1,10 @@
 package com.orange.groupbuy.recommendserver;
 
+import java.util.Date;
 import java.util.List;
+
 import org.apache.log4j.Logger;
+
 import com.mongodb.BasicDBObject;
 import com.orange.common.mongodb.MongoDBClient;
 import com.orange.common.processor.BasicProcessorRequest;
@@ -44,29 +47,38 @@ public class RecommendRequest extends BasicProcessorRequest {
             log.info("find user(" + user.getUserId() + ") but user has no shopping item");
             return;
         }
-        
+
         String userId = user.getUserId();
 
         for (int i = 0; i < user.getShoppingItem().size(); i++) {
 
-            try{
+            try {
                 BasicDBObject item = (BasicDBObject) (user.getShoppingItem().get(i));
-    
-                String city = (String) item.get(DBConstants.F_CITY);
-                String cate = (String) item.get(DBConstants.F_CATEGORY_NAME);
-                String subcate = (String) item.get(DBConstants.F_SUB_CATEGORY_NAME);
-                String itemId = (String) item.get(DBConstants.F_ITEM_ID);
-                String keyword = (String) item.get(DBConstants.F_KEYWORD);
-    
+                String city =  item.getString(DBConstants.F_CITY);
+                String cate =  item.getString(DBConstants.F_CATEGORY_NAME);
+                String subcate = item.getString(DBConstants.F_SUB_CATEGORY_NAME);
+                String itemId = item.getString(DBConstants.F_ITEM_ID);
+                String keyword = item.getString(DBConstants.F_KEYWORD);
+                Double maxPrice = item.getDouble(DBConstants.F_MAX_PRICE);
+                Date expireDate = (Date) item.get(DBConstants.F_EXPIRE_DATE);
+
+                if (expireDate != null) {
+                    Date now = new Date();
+                    if (now.after(expireDate)) {
+                        log.info("user = " + user.getUserId() + ", itemId = " + itemId + ",  expireDate = " + expireDate);
+                        continue;
+                    }
+                }
+
                 String keywords = generateKeyword(city, cate, subcate, keyword);
-    
+
                 RecommendItem recommendItem = RecommendItemManager.findRecommendItem(mongoClient, user.getUserId(), itemId);
-    
+
                 List<Product> productList = ProductManager.searchProductBySolr(SolrClient.getInstance(), mongoClient, city,
-                        null, false, keywords, 0, RecommendConstants.MAX_RECOMMEND_COUNT);
-    
+                        null, false, keywords, maxPrice, 0, RecommendConstants.MAX_RECOMMEND_COUNT);
+
                 if (productList == null || productList.size() <= 0) {
-                    log.info("no product match to be recommended for user=" + userId + ", itemId = " + itemId);
+                    log.info("no product match to recommend for user=" + userId + ", itemId = " + itemId);
                     UserManager.recommendFailure(mongoClient, user);
                     return;
                 }
@@ -106,7 +118,6 @@ public class RecommendRequest extends BasicProcessorRequest {
                         saveProductToPushMessage(mongoClient, product,  user);
                     }
 
-                    // save object into DB
                     mongoClient.save(DBConstants.T_USER, user.getDbObject());
                     mongoClient.save(DBConstants.T_RECOMMEND, recommendItem.getDbObject());
                 }
@@ -129,29 +140,26 @@ public class RecommendRequest extends BasicProcessorRequest {
             return;
         }
 
-//        UserManager.addPushCount(user);
-
         log.info("select product = " + product.getId() + ", score = " + product.getScore() +
                 " for push to user = " + user.getUserId());
         PushMessageManager.savePushMessage(mongoClient, product, user);
     }
 
-    private String generateKeyword(String city, String cate, String subcate, String keyword) {
+    private String generateKeyword(String city, String cate, String subcate, String kw) {
 
         // TODO change conditions
-        
         String keywords = "";
         if (!StringUtil.isEmpty(city)) {
             keywords = city;
         }
         if (!StringUtil.isEmpty(cate)) {
-            keywords = keyword.concat(" ").concat(cate);
+            keywords = keywords.concat(" ").concat(cate);
         }
         if (!StringUtil.isEmpty(subcate)) {
-            keywords = keyword.concat(" ").concat(subcate);
+            keywords = keywords.concat(" ").concat(subcate);
         }
-        if (!StringUtil.isEmpty(keyword)) {
-            keywords = keyword.concat(" ").concat(keyword);
+        if (!StringUtil.isEmpty(kw)) {
+            keywords = keywords.concat(" ").concat(kw);
         }
 
         return keywords.trim();
