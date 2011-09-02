@@ -61,6 +61,10 @@ public class RecommendRequest extends BasicProcessorRequest {
                 String keywords = generateKeyword(city, cate, subcate, keyword);
     
                 RecommendItem recommendItem = RecommendItemManager.findRecommendItem(mongoClient, user.getUserId(), itemId);
+                if (recommendItem.hasRecommendToday()){
+                    log.info("Item "+itemId+" has been recommended today, skip matching action");
+                    return;
+                }
     
                 List<Product> productList = ProductManager.searchProductBySolr(SolrClient.getInstance(), mongoClient, city,
                         null, false, keywords, 0, RecommendConstants.MAX_RECOMMEND_COUNT);
@@ -91,11 +95,12 @@ public class RecommendRequest extends BasicProcessorRequest {
                         " are added/updated for user=" + userId + ", itemId = " + itemId);
 
                 if (hasChange) {
+                                        
                     // sort product in recommend item
                     String productId = recommendItem.sortAndSelectProduct(user);
 
                     if (productId == null) {
-                        log.info("no product to recommend");
+                        log.info("No product to recommend");
                         return;
                     }
 
@@ -117,6 +122,7 @@ public class RecommendRequest extends BasicProcessorRequest {
                 log.error("Processing user(" + user.getUserId() +
                         ") shopping item, but catch exception = " +
                         e.toString() + e.getMessage());
+                e.printStackTrace();
 
                 UserManager.recommendFailure(mongoClient, user);
             }
@@ -145,13 +151,13 @@ public class RecommendRequest extends BasicProcessorRequest {
             keywords = city;
         }
         if (!StringUtil.isEmpty(cate)) {
-            keywords = keyword.concat(" ").concat(cate);
+            keywords = keywords.concat(" ").concat(cate);
         }
         if (!StringUtil.isEmpty(subcate)) {
-            keywords = keyword.concat(" ").concat(subcate);
+            keywords = keywords.concat(" ").concat(subcate);
         }
         if (!StringUtil.isEmpty(keyword)) {
-            keywords = keyword.concat(" ").concat(keyword);
+            keywords = keywords.concat(" ").concat(keyword);
         }
 
         return keywords.trim();
