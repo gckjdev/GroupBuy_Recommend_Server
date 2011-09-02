@@ -59,7 +59,7 @@ public class RecommendRequest extends BasicProcessorRequest {
                 String subcate = item.getString(DBConstants.F_SUB_CATEGORY_NAME);
                 String itemId = item.getString(DBConstants.F_ITEM_ID);
                 String keyword = item.getString(DBConstants.F_KEYWORD);
-                Double maxPrice = item.getDouble(DBConstants.F_MAX_PRICE);
+                Double maxPrice = (Double)item.get(DBConstants.F_MAX_PRICE);
                 Date expireDate = (Date) item.get(DBConstants.F_EXPIRE_DATE);
 
                 if (expireDate != null) {
@@ -74,7 +74,7 @@ public class RecommendRequest extends BasicProcessorRequest {
     
                 RecommendItem recommendItem = RecommendItemManager.findRecommendItem(mongoClient, user.getUserId(), itemId);
                 if (recommendItem.hasRecommendToday()){
-                    log.info("Item "+itemId+" has been recommended today, skip matching action");
+                    log.info("user item "+itemId+" has been recommended today, skip matching action");
                     return;
                 }
 
@@ -146,7 +146,7 @@ public class RecommendRequest extends BasicProcessorRequest {
             return;
         }
 
-        log.info("select product = " + product.getId() + ", score = " + product.getScore() +
+        log.info("select product = " + product.getId() +
                 " for push to user = " + user.getUserId());
         PushMessageManager.savePushMessage(mongoClient, product, user);
     }
