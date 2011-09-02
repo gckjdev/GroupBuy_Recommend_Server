@@ -72,7 +72,7 @@ public class RecommendRequest extends BasicProcessorRequest {
 
                 String keywords = generateKeyword(city, cate, subcate, keyword);
     
-                RecommendItem recommendItem = RecommendItemManager.findRecommendItem(mongoClient, user.getUserId(), itemId);
+                RecommendItem recommendItem = RecommendItemManager.findAndUpsertRecommendItem(mongoClient, user.getUserId(), itemId);
                 if (recommendItem.hasRecommendToday()){
                     log.info("Item "+itemId+" has been recommended today, skip matching action");
                     return;
