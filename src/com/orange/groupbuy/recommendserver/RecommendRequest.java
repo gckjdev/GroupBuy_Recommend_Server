@@ -63,8 +63,8 @@ public class RecommendRequest extends BasicProcessorRequest {
                 Date expireDate = (Date) item.get(DBConstants.F_EXPIRE_DATE);
 
                 if (isExpire(expireDate)) {
-                        log.info("user = " + user.getUserId() + ", itemId = " + itemId + ",  expireDate = " + expireDate);
-                        continue;
+                    log.info("user = " + user.getUserId() + ", itemId = " + itemId + ",  expireDate = " + expireDate);
+                    continue;
                 }
 
                 String keywords = generateKeyword(city, cate, subcate, keyword);
@@ -127,7 +127,9 @@ public class RecommendRequest extends BasicProcessorRequest {
                 UserManager.recommendClose(mongoClient, user);
             }
             catch (Exception e) {
-                log.error("Processing user(" + user.getUserId() + ") shopping item, but catch exception = " + e.toString() + e.getMessage());
+                log.error("Processing user(" + user.getUserId() + ") shopping item, but catch exception = " 
+                        + e.toString());
+                e.printStackTrace();
                 UserManager.recommendFailure(mongoClient, user);
             }
 
@@ -163,7 +165,10 @@ public class RecommendRequest extends BasicProcessorRequest {
         return keywords.trim();
     }
     
-    private static boolean isExpire(Date expireDate) {
+    private static boolean isExpire(Date expireDate) {        
+        if (expireDate == null)
+            return false;
+        
         Date now = new Date();
         if (now.after(expireDate)) {
             return true;
