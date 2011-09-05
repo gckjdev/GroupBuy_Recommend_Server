@@ -75,7 +75,7 @@ public class RecommendRequest extends BasicProcessorRequest {
                 RecommendItem recommendItem = RecommendItemManager.findAndUpsertRecommendItem(mongoClient, user.getUserId(), itemId);
                 if (recommendItem.hasRecommendToday()){
                     log.info("user item "+itemId+" has been recommended today, skip matching action");
-                    return;
+                    continue;
                 }
 
                 List<Product> productList = ProductManager.searchProductBySolr(SolrClient.getInstance(), mongoClient, city,
@@ -84,7 +84,7 @@ public class RecommendRequest extends BasicProcessorRequest {
                 if (productList == null || productList.size() <= 0) {
                     log.info("no product match to recommend for user=" + userId + ", itemId = " + itemId);
                     UserManager.recommendFailure(mongoClient, user);
-                    return;
+                    continue;
                 }
 
 
@@ -113,7 +113,7 @@ public class RecommendRequest extends BasicProcessorRequest {
 
                     if (productId == null) {
                         log.info("No product to recommend");
-                        return;
+                        continue;
                     }
 
                     Product product = ProductManager.findProductById(mongoClient, productId);
