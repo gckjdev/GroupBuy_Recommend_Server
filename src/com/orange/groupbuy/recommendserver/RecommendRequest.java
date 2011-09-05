@@ -62,12 +62,9 @@ public class RecommendRequest extends BasicProcessorRequest {
                 Double maxPrice = (Double)item.get(DBConstants.F_MAX_PRICE);
                 Date expireDate = (Date) item.get(DBConstants.F_EXPIRE_DATE);
 
-                if (expireDate != null) {
-                    Date now = new Date();
-                    if (now.after(expireDate)) {
+                if (isExpire(expireDate)) {
                         log.info("user = " + user.getUserId() + ", itemId = " + itemId + ",  expireDate = " + expireDate);
                         continue;
-                    }
                 }
 
                 String keywords = generateKeyword(city, cate, subcate, keyword);
@@ -130,11 +127,7 @@ public class RecommendRequest extends BasicProcessorRequest {
                 UserManager.recommendClose(mongoClient, user);
             }
             catch (Exception e) {
-                log.error("Processing user(" + user.getUserId() +
-                        ") shopping item, but catch exception = " +
-                        e.toString() + e.getMessage());
-                e.printStackTrace();
-
+                log.error("Processing user(" + user.getUserId() + ") shopping item, but catch exception = " + e.toString() + e.getMessage());
                 UserManager.recommendFailure(mongoClient, user);
             }
 
@@ -146,8 +139,7 @@ public class RecommendRequest extends BasicProcessorRequest {
             return;
         }
 
-        log.info("select product = " + product.getId() +
-                " for push to user = " + user.getUserId());
+        log.info("select product = " + product.getId() + " for push to user = " + user.getUserId());
         PushMessageManager.savePushMessage(mongoClient, product, user);
     }
 
@@ -170,5 +162,14 @@ public class RecommendRequest extends BasicProcessorRequest {
 
         return keywords.trim();
     }
+    
+    private static boolean isExpire(Date expireDate) {
+        Date now = new Date();
+        if (now.after(expireDate)) {
+            return true;
+        }
+        return false;
+    }
+
 
 }
