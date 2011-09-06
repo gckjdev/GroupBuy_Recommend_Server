@@ -97,6 +97,7 @@ public class RecommendRequest extends BasicProcessorRequest {
 
                         hasChange = true;
                         addCount++;
+                        
                     }
                 }
 
@@ -123,7 +124,16 @@ public class RecommendRequest extends BasicProcessorRequest {
                     mongoClient.save(DBConstants.T_USER, user.getDbObject());
                     mongoClient.save(DBConstants.T_RECOMMEND, recommendItem.getDbObject());
                 }
-
+                
+                // delete the expired product
+                for (Product product : productList) {
+                    if (RecommendItemManager.isProductExpired(product)) {
+                        log.info("product " + product.getId() + "expire, delete from recommend list.");
+                        RecommendItemManager.deleteExpiredProduct(mongoClient, itemId, product.getId());
+                        continue;
+                    }
+                }
+                
                 UserManager.recommendClose(mongoClient, user);
             }
             catch (Exception e) {
