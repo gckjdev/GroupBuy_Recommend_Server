@@ -2,15 +2,12 @@ package com.orange.groupbuy.recommendserver;
 
 import java.util.Date;
 import java.util.List;
-
 import org.apache.log4j.Logger;
-
 import com.mongodb.BasicDBObject;
 import com.orange.common.mongodb.MongoDBClient;
 import com.orange.common.processor.BasicProcessorRequest;
 import com.orange.common.processor.CommonProcessor;
 import com.orange.common.solr.SolrClient;
-import com.orange.common.utils.StringUtil;
 import com.orange.groupbuy.constant.DBConstants;
 import com.orange.groupbuy.dao.Product;
 import com.orange.groupbuy.dao.RecommendItem;
@@ -131,8 +128,7 @@ public class RecommendRequest extends BasicProcessorRequest {
             }
             catch (Exception e) {
                 log.error("Processing user(" + user.getUserId() + ") shopping item, but catch exception = " 
-                        + e.toString());
-                e.printStackTrace();
+                        + e.getMessage(), e);
                 UserManager.recommendFailure(mongoClient, user);
             }
 
