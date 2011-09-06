@@ -70,6 +70,8 @@ public class RecommendRequest extends BasicProcessorRequest {
                 String keywords = RecommendItemManager.generateKeyword(cate, subcate, keyword);
     
                 RecommendItem recommendItem = RecommendItemManager.findAndUpsertRecommendItem(mongoClient, user.getUserId(), itemId);
+                RecommendItemManager.cleanExpireProduct(mongoClient, recommendItem);
+                
                 if (recommendItem.hasRecommendToday()){
                     log.info("user item "+itemId+" has been recommended today, skip matching action");
                     continue;
@@ -125,14 +127,17 @@ public class RecommendRequest extends BasicProcessorRequest {
                     mongoClient.save(DBConstants.T_RECOMMEND, recommendItem.getDbObject());
                 }
                 
-                // delete the expired product
+   /*             // delete the expired product
                 for (Product product : productList) {
+                    if(product.getScore() < DBConstants.MIN_SCORE_TO_RECOMMEND) {
+                        continue;
+                    }
                     if (RecommendItemManager.isProductExpired(product)) {
                         log.info("product " + product.getId() + "expire, delete from recommend list.");
                         RecommendItemManager.deleteExpiredProduct(mongoClient, itemId, product.getId());
                         continue;
                     }
-                }
+                }*/
                 
                 UserManager.recommendClose(mongoClient, user);
             }
