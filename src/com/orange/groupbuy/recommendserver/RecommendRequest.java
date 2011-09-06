@@ -62,12 +62,12 @@ public class RecommendRequest extends BasicProcessorRequest {
                 Double maxPrice = (Double)item.get(DBConstants.F_MAX_PRICE);
                 Date expireDate = (Date) item.get(DBConstants.F_EXPIRE_DATE);
 
-                if (isExpire(expireDate)) {
+                if (RecommendItemManager.isExpire(expireDate)) {
                     log.info("user = " + user.getUserId() + ", itemId = " + itemId + ",  expireDate = " + expireDate);
                     continue;
                 }
 
-                String keywords = generateKeyword(city, cate, subcate, keyword);
+                String keywords = RecommendItemManager.generateKeyword(cate, subcate, keyword);
     
                 RecommendItem recommendItem = RecommendItemManager.findAndUpsertRecommendItem(mongoClient, user.getUserId(), itemId);
                 if (recommendItem.hasRecommendToday()){
@@ -117,7 +117,7 @@ public class RecommendRequest extends BasicProcessorRequest {
 
                     if (product != null) {
                         // select one product for pushMessage, and set the status to sending
-                        saveProductToPushMessage(mongoClient, product,  user);
+                        saveProductToPushMessage(mongoClient, product,  user, recommendItem);
                     }
 
                     mongoClient.save(DBConstants.T_USER, user.getDbObject());
@@ -136,45 +136,14 @@ public class RecommendRequest extends BasicProcessorRequest {
         }
     }
 
-    private void saveProductToPushMessage(MongoDBClient mongoClient, Product product, User user) {
+    private void saveProductToPushMessage(MongoDBClient mongoClient, Product product, User user, RecommendItem item) {
         if (product == null) {
             return;
         }
 
         log.info("select product = " + product.getId() + " for push to user = " + user.getUserId());
-        PushMessageManager.savePushMessage(mongoClient, product, user);
+        PushMessageManager.savePushMessage(mongoClient, product, user, item);
     }
 
-    private String generateKeyword(String city, String cate, String subcate, String kw) {
-
-        // TODO change conditions
-        String keywords = "";
-        if (!StringUtil.isEmpty(city)) {
-            keywords = city;
-        }
-        if (!StringUtil.isEmpty(cate)) {
-            keywords = keywords.concat(" ").concat(cate);
-        }
-        if (!StringUtil.isEmpty(subcate)) {
-            keywords = keywords.concat(" ").concat(subcate);
-        }
-        if (!StringUtil.isEmpty(kw)) {
-            keywords = keywords.concat(" ").concat(kw);
-        }
-
-        return keywords.trim();
-    }
-    
-    private static boolean isExpire(Date expireDate) {        
-        if (expireDate == null)
-            return false;
-        
-        Date now = new Date();
-        if (now.after(expireDate)) {
-            return true;
-        }
-        return false;
-    }
-
-
+              
 }

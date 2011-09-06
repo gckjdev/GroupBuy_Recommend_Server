@@ -13,6 +13,7 @@ public class RecommendServer {
     public static final Logger log = Logger.getLogger(RecommendServer.class.getName());
 
     private static final int MAX_THREAD_NUM = 10;
+    private static final int RESET_HOUR = 12;            // 8 AM in the morning, reset all tasks
 
     private static MongoDBClient mongoClient = new MongoDBClient(DBConstants.D_GROUPBUY);
 
@@ -24,6 +25,7 @@ public class RecommendServer {
 
         ScheduleServer scheduleServer = new ScheduleServer(new RecommendProcessor(mongoClient));
         scheduleServer.setThreadNum(MAX_THREAD_NUM);
+        scheduleServer.setResetHour(RESET_HOUR);
         Thread server = new Thread(scheduleServer);
         server.start();
 

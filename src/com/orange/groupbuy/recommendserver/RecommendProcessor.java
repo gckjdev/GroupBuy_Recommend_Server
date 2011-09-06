@@ -23,7 +23,7 @@ public class RecommendProcessor extends ScheduleServerProcessor {
 
     @Override
     public void resetAllRunningMessage () {
-        UserManager.resetAllRunningMessage(mongoClient);
+        UserManager.resetRecommendationStatus(mongoClient);
     }
 
     @Override
@@ -32,7 +32,7 @@ public class RecommendProcessor extends ScheduleServerProcessor {
         User user = UserManager.findUserForRecommend(mongoClient);
 
         if (user == null) {
-            log.info("No user to be recommended.");
+            log.debug("No user to be recommended.");
             return null;
         }
         RecommendRequest request = new RecommendRequest(user);
