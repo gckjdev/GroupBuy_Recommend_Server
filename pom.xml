@@ -220,7 +220,7 @@
 			        </descriptorRefs>
 			        <archive>
 			            <manifest>
-			                <mainClass>com.orange.groupbuy.recommend.RecommendServer</mainClass>
+			                <mainClass>com.orange.groupbuy.recommendserver.RecommendServer</mainClass>
 			            </manifest>
 			        </archive>
 			    </configuration>

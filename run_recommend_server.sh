@@ -1,1 +1,1 @@
-nohup java -jar GroupBuy_API_Server-1.0-SNAPSHOT.jar > ./api_server.log &
+nohup java -jar GroupBuy_Recommend_Server-1.0-SNAPSHOT.jar > ./recommend_server.log &
