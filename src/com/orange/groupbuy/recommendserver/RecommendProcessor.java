@@ -42,14 +42,16 @@ public class RecommendProcessor extends ScheduleServerProcessor {
     @Override
     public final boolean canProcessRequest () {
 
-        if (DateUtil.isMiddleDate(RecommendConstants.START_DATE_HOUR, RecommendConstants.START_DATE_MINUTE,
-                                  RecommendConstants.END_DATE_HOUR, RecommendConstants.END_DATE_MINUTE)) {
-            return true;
-        }
-        else {
-            log.debug("Current date is not valid for running recommendation");
-            return false;
-        }
+        return true;    // return true always
+        
+//        if (DateUtil.isMiddleDate(RecommendConstants.START_DATE_HOUR, RecommendConstants.START_DATE_MINUTE,
+//                                  RecommendConstants.END_DATE_HOUR, RecommendConstants.END_DATE_MINUTE)) {
+//            return true;
+//        }
+//        else {
+//            log.debug("Current date is not valid for running recommendation");
+//            return false;
+//        }
     }
 
 }

@@ -58,6 +58,7 @@ public class RecommendRequest extends BasicProcessorRequest {
                 String keyword = item.getString(DBConstants.F_KEYWORD);
                 Double maxPrice = (Double)item.get(DBConstants.F_MAX_PRICE);
                 Date expireDate = (Date) item.get(DBConstants.F_EXPIRE_DATE);
+                String appId = item.getString(DBConstants.F_APPID);
 
                 if (RecommendItemManager.isExpire(expireDate)) {
                     log.info("user = " + user.getUserId() + ", itemId = " + itemId + ",  expireDate = " + expireDate);
@@ -66,7 +67,7 @@ public class RecommendRequest extends BasicProcessorRequest {
 
                 String keywords = RecommendItemManager.generateKeyword(cate, subcate, keyword);
     
-                RecommendItem recommendItem = RecommendItemManager.findAndUpsertRecommendItem(mongoClient, user.getUserId(), itemId);
+                RecommendItem recommendItem = RecommendItemManager.findAndUpsertRecommendItem(mongoClient, user.getUserId(), itemId, appId);
                 RecommendItemManager.cleanExpireProduct(mongoClient, recommendItem);
                 
                 if (recommendItem.hasRecommendToday()){
