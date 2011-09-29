@@ -61,7 +61,7 @@ public class RecommendRequest extends BasicProcessorRequest {
                 String appId = item.getString(DBConstants.F_APPID);
 
                 if (RecommendItemManager.isExpire(expireDate)) {
-                    log.info("user = " + user.getUserId() + ", itemId = " + itemId + ",  expireDate = " + expireDate);
+                    log.info("user already expired, skip. userId = " + user.getUserId() + ", itemId = " + itemId + ",  expireDate = " + expireDate);
                     continue;
                 }
 
