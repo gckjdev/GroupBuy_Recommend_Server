@@ -21,6 +21,8 @@ import com.orange.groupbuy.manager.UserManager;
  * The Class RecommendRequest.
  */
 public class RecommendRequest extends BasicProcessorRequest {
+    
+    public static final int MAX_RECOMMEND_COUNT = 25;
 
     public static final Logger log = Logger.getLogger(RecommendRequest.class.getName());
 
@@ -56,6 +58,9 @@ public class RecommendRequest extends BasicProcessorRequest {
                 String subcate = item.getString(DBConstants.F_SUB_CATEGORY_NAME);
                 String itemId = item.getString(DBConstants.F_ITEM_ID);
                 String keyword = item.getString(DBConstants.F_KEYWORD);
+                String latitude = item.getString(DBConstants.F_LATITUDE);
+                String longitude = item.getString(DBConstants.F_LONGITUDE);
+                String radius = item.getString(DBConstants.F_RADIUS);
                 Double maxPrice = (Double)item.get(DBConstants.F_MAX_PRICE);
                 Date expireDate = (Date) item.get(DBConstants.F_EXPIRE_DATE);
                 String appId = item.getString(DBConstants.F_APPID);
@@ -75,9 +80,23 @@ public class RecommendRequest extends BasicProcessorRequest {
                     continue;
                 }
 
-                List<Product> productList = ProductManager.searchProductBySolr(SolrClient.getInstance(), mongoClient, city,
-                        null, false, keywords, maxPrice, 0, RecommendConstants.MAX_RECOMMEND_COUNT);
-
+                List<Product> productList = null;
+                if(latitude != null && latitude.length() > 0
+                        &&longitude != null && longitude.length() > 0
+                        &&radius != null && radius.length() > 0){
+                    
+                    Double latitudeValue = Double.valueOf(latitude);
+                    Double longitudeValue = Double.valueOf(longitude);
+                    Double radiusValue = Double.valueOf(radius)/1000;
+                    
+                    productList = ProductManager.searchProductBySolr(SolrClient.getInstance(), mongoClient,
+                            city, null, false, keywords, maxPrice, latitudeValue, longitudeValue, radiusValue, 0, MAX_RECOMMEND_COUNT);
+                }
+                else{
+                    productList = ProductManager.searchProductBySolr(SolrClient.getInstance(), mongoClient,
+                        city, null, false, keywords, maxPrice, 0, MAX_RECOMMEND_COUNT);
+                    log.info("<RecommendRequest> location match switch is turned off or null,latitude "+latitude+" longitude is "+longitude+" radius is "+radius);
+                }
                 if (productList == null || productList.size() <= 0) {
                     log.info("no product match to recommend for user=" + userId + ", itemId = " + itemId);
                     UserManager.recommendFailure(mongoClient, user);
