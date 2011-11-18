@@ -62,11 +62,14 @@ public class RecommendRequest extends BasicProcessorRequest {
                 String longitude = item.getString(DBConstants.F_LONGITUDE);
                 String radius = item.getString(DBConstants.F_RADIUS);
                 Double maxPrice = null;
-                if (item.containsField(DBConstants.F_MAX_PRICE)){
+                if (item.containsField(DBConstants.F_MAX_PRICE)){                    
                     Object value = item.get(DBConstants.F_MAX_PRICE);
-                    if (value != null){
+                    if (value != null && value instanceof Double){
                         maxPrice = (Double)value;
                     }
+                    else if (value != null && value instanceof Integer){
+                        maxPrice = Double.valueOf(((Integer)value).doubleValue());
+                    }                    
                 }
                 Date expireDate = (Date) item.get(DBConstants.F_EXPIRE_DATE);
                 String appId = item.getString(DBConstants.F_APPID);
